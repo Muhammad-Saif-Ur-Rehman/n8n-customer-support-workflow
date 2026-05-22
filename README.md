@@ -2,6 +2,23 @@
 
 This folder contains two n8n workflows used by Lumina Smart Home support to process incoming support emails and generate RMAs.
 
+## Screenshots
+
+### Customer support workflow
+![Customer support workflow](screenshots/Customer%20support%20workflow.png)
+
+### RMA code generator workflow
+![RMA code generator workflow](screenshots/RMA%20code%20generator%20workflow.png)
+
+## Purpose
+
+These workflows automate Lumina Smart Home's customer support email handling:
+
+- The `Customer support workflow` monitors a Gmail inbox, classifies incoming messages as either customer support related or other, and ignores non-support messages.
+- For support-related messages the workflow triggers an AI Agent which uses RAG via the Pinecone knowledge base and an RMA generation tool. The agent uses retrieved knowledge to answer customer questions, and when needed generates an RMA code.
+- Generated RMA codes and related details are stored by the `RMA tools for customer support workflow` in a Google Sheet.
+- After the AI Agent composes the response, the workflow replies to the customer via Gmail and logs a ticket row in Google Sheets with the fields: `Timestamp | Customer Email | Subject | Resolution | RMA Code`.
+
 ## Workflows included
 - **Customer support workflow** — automates inbound Gmail processing: classification, RAG knowledge-base lookup, AI agent response generation, optional RMA generation (calls the RMA workflow), replies via Gmail, and logging to Google Sheets. See [workflows/Customer support workflow.json](workflows/Customer support workflow.json).
 - **RMA tools for customer support workflow** — lightweight workflow that generates an RMA code (format: `LUM-####`) and saves it with customer details to Google Sheets. See [workflows/RMA tools for customer support workflow.json](workflows/RMA tools for customer support workflow.json).
@@ -51,9 +68,5 @@ Make sure these credentials are configured in your n8n instance before activatin
 - [workflows/Customer support workflow.json](workflows/Customer support workflow.json)
 - [workflows/RMA tools for customer support workflow.json](workflows/RMA tools for customer support workflow.json)
 
-## Questions or next steps
-- Want me to add a small troubleshooting section or a sample test email payload? Open an issue or ask and I’ll add it.
 
----
-Generated from the workflow JSON files in this folder.
 
