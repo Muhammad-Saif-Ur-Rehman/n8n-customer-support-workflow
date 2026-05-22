@@ -22,9 +22,20 @@ These workflows automate Lumina Smart Home's customer support email handling:
 - Generated RMA codes and related details are stored by the `RMA tools for customer support workflow` in a Google Sheet.
 - After the AI Agent composes the response, the workflow replies to the customer via Gmail and logs a ticket row in Google Sheets with the fields: `Timestamp | Customer Email | Subject | Resolution | RMA Code`.
 
+## Knowledge Base Ingestion
+
+The automated chunking and embedding system prepares the support knowledge base that the AI Agent uses in the customer support workflow:
+
+- A `Google Drive` node checks for customer support related files and downloads the approved documents.
+- The downloaded content is split into smaller chunks so it can be processed efficiently.
+- Google embeddings are generated for each chunk.
+- The embedded chunks are stored in `Pinecone`.
+- The `Customer support workflow` then uses that Pinecone index as its knowledge base for RAG-based answers.
+
 ## Workflows included
 - **Customer support workflow** — automates inbound Gmail processing: classification, RAG knowledge-base lookup, AI agent response generation, optional RMA generation (calls the RMA workflow), replies via Gmail, and logging to Google Sheets. See [workflows/Customer support workflow.json](workflows/Customer support workflow.json).
 - **RMA tools for customer support workflow** — lightweight workflow that generates an RMA code (format: `LUM-####`) and saves it with customer details to Google Sheets. See [workflows/RMA tools for customer support workflow.json](workflows/RMA tools for customer support workflow.json).
+- **Automated chunking and embedding system** — ingests support documents from Google Drive, chunks them, generates embeddings, and stores them in Pinecone for retrieval by the customer support workflow. See [screenshots/Automated chunking and embedding system.png](screenshots/Automated%20chunking%20and%20embedding%20system.png).
 
 ## How the main flow works
 - Trigger: `Gmail Trigger` polling for new messages.
