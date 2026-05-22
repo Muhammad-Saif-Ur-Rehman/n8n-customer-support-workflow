@@ -1,0 +1,167 @@
+{
+  "name": "RMA tools for customer support workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "Customer Email"
+            },
+            {
+              "name": "Reason"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "d922d46b-e69a-49cd-a5a8-5e88a4c2fa53",
+      "name": "Customer Data"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Create a random RMA\nconst rma = `LUM-${Math.floor(1000 + Math.random() * 9000)}`;\nconst date = new Date().toISOString().split('T')[0];\n\n// Get inputs from the Agent (passed as arguments)\nconst email = $input.first().json['Customer Email'];\nconst reason =$input.first().json.Reason;\n\nreturn { json: { rma, date, email, reason } };"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        0
+      ],
+      "id": "ad0939ed-7549-475e-9bca-215710c8d834",
+      "name": "RMA Generator"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1AuiXIqbBYl-z10ixaKxp8Iz4w1dmAYpeaxR6OituL2Q",
+          "mode": "list",
+          "cachedResultName": "Lumina Refund Details",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1AuiXIqbBYl-z10ixaKxp8Iz4w1dmAYpeaxR6OituL2Q/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1AuiXIqbBYl-z10ixaKxp8Iz4w1dmAYpeaxR6OituL2Q/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Date": "={{ $json.date }}",
+            "Customer Email": "={{ $json.email }}",
+            "Reason": "={{ $json.reason }}",
+            "RMA Number": "={{ $json.rma }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Date",
+              "displayName": "Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Customer Email",
+              "displayName": "Customer Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "RMA Number",
+              "displayName": "RMA Number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Reason",
+              "displayName": "Reason",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        448,
+        0
+      ],
+      "id": "dd969302-a1d4-4b5a-860d-b5e19498cf8f",
+      "name": "Saving customer details and RMA",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "hDGMrztmcsJEb8yf",
+          "name": "Google Sheets account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Customer Data": {
+      "main": [
+        [
+          {
+            "node": "RMA Generator",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RMA Generator": {
+      "main": [
+        [
+          {
+            "node": "Saving customer details and RMA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Saving customer details and RMA": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "a0db8172-60fa-4204-a93a-2dc7f0f3aa26",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "ba4a413a28fff05e64ee8cfa646ba24d9886a3ee4c960d099634d2d8108802a5"
+  },
+  "id": "ajFcXKTmh1UHGM-xZiDDJ",
+  "tags": []
+}

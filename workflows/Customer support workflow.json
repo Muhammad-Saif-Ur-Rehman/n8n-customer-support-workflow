@@ -1,0 +1,653 @@
+{
+  "name": "Customer support workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## Customer Support Workflow\n###Workflow No 2\n",
+        "height": 80,
+        "width": 352
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -64,
+        368
+      ],
+      "typeVersion": 1,
+      "id": "195514b5-6f7b-4503-9679-3e51ac1068cf",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "simple": false,
+        "filters": {},
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -736,
+        1392
+      ],
+      "id": "7921c6c1-0a90-4d75-a563-0b58c9d1117e",
+      "name": "Gmail Trigger",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "tgQCKa9VzTtRVHrp",
+          "name": "Gmail saif010415"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        112,
+        1584
+      ],
+      "id": "35264fa4-0ebb-48a3-b65d-487065660bab",
+      "name": "No Operation, do nothing"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Subject: {{ $json.subject }}\nBody: {{ $json.text }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "=# Role & Objective\nYou are Ms. Sian, a friendly, professional Customer Support Agent for Lumina Smart Home. \n\n# CRITICAL: EXCLUSIVE JSON OUTPUT FORMAT\nYour entire response must be a single, flat JSON object. Do not include markdown code blocks (like ```json). Do not nest the tools inside the email content. Every key must be independent.\n\n{\n  \"Output\": \"HTML_EMAIL_BODY_ONLY\",\n  \"resolving_tool\": \"CHOOSE_ONLY_knowledge_base_OR_rma\",\n  \"rma_code\": \"RMA_NUMBER_OR_NULL\"\n}\n\n## Field Restrictions for Drag-and-Drop Mapping:\n1. \"Output\": This field must contain ONLY the raw HTML email text. Absolutely NO tool names, NO JSON data, and NO markdown inside this field.\n2. \"resolving_tool\": This field must contain exactly one of these two strings: \"knowledge_base\" OR \"rma\". Nothing else.\n3. \"rma_code\": This field must contain only the RMA string or the word null.\n\n# Formatting Rules for the \"Output\" Field\n- CRITICAL: Do NOT use Markdown (no **, #, or lists like -). Use ONLY HTML tags (<b>, <br>, <ul>, <li>).\n- Do not include a subject line in the HTML output.\n- Mandatory Sign-off at the bottom: <br><br>Warm regards,<br>Ms. Sian 🌟<br>Lumina Smart Home Support\n\n# Email Openers (Context-Dependent)\n- IF New Inquiry: Start with \"Thanks for reaching out to Lumina Support! 🏠<br><br>\"\n- IF Reply/Follow-up: Start with \"Hi [Name],<br><br>\" (Do NOT use the \"Thanks for reaching out\" line).\n\n# Tool Decision Logic\n- **If technical question / troubleshooting:**\n  - Search the knowledge base.\n  - Set \"resolving_tool\" strictly to: \"knowledge_base\"\n  - Set \"rma_code\" strictly to: null\n\n- **If return requested / product defective:**\n  - Call the `generate_rma` tool.\n  - Set \"resolving_tool\" strictly to: \"rma\"\n  - Set \"rma_code\" strictly to the generated number string.\n  - Insert Shipping Policy 3.2 text into the \"Output\" field:\n    - Defective: \"Since your item is defective, return shipping is free. Please ship the item to the address below and email us a copy of the shipping receipt for full reimbursement.\"\n    - Change of Mind: \"For non-defective returns, you are responsible for the return shipping costs.\"\n  - Insert Return Address into \"Output\" field: \"Lumina Returns, 123 Tech Blvd, Austin, TX 78701.\"\n  - Do NOT promise a prepaid label.\n\n# HTML Table Template (If needed in Output)\n<table border=\"1\" cellpadding=\"8\" cellspacing=\"0\" style=\"border-collapse: collapse; width: 100%; font-family: Arial, sans-serif;\">\n  <thead style=\"background-color: #f2f2f2;\">\n    <tr><th>Header 1</th><th>Header 2</th></tr>\n  </thead>\n  <tbody>\n    <tr><td>Value 1</td><td>Value 2</td></tr>\n  </tbody>\n</table>\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        80,
+        976
+      ],
+      "id": "b13bb0a9-ca2c-4039-8132-a060ea5b5e5b",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolDescription": "Call this tool to access policies, product and serivices and other customer support related details of Lumina Smart Home.",
+        "pineconeIndex": {
+          "__rl": true,
+          "value": "lumina",
+          "mode": "list",
+          "cachedResultName": "lumina"
+        },
+        "topK": "={{ 4 }}",
+        "options": {
+          "pineconeNamespace": "CustomerSupport"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+      "typeVersion": 1.3,
+      "position": [
+        -32,
+        1200
+      ],
+      "id": "fab9faf7-2faf-47a1-968f-a93d9737c4b2",
+      "name": "knowledgebase",
+      "credentials": {
+        "pineconeApi": {
+          "id": "IslEk41fXzgBqOih",
+          "name": "Pinecone RAG pipline"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.embeddingsGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        48,
+        1408
+      ],
+      "id": "80a5c240-2554-4c39-a7ba-d29c88095043",
+      "name": "Embeddings Google Gemini",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "q4b0CeQmMBLjGAps",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "value": "1XmQiGkOcpjM32TyfSc4Pl9mg3pt96AsP",
+          "mode": "list",
+          "cachedResultName": "Lumina Smart Home Official Policy & Product Guide.docx",
+          "cachedResultUrl": "https://docs.google.com/document/d/1XmQiGkOcpjM32TyfSc4Pl9mg3pt96AsP/edit?usp=drivesdk&ouid=102917030913947779659&rtpof=true&sd=true"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        -736,
+        544
+      ],
+      "id": "bb4126ab-8248-4f4c-8ce3-8b2951bdbc8a",
+      "name": "Download file",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "scZaIubyYxzsT3ME",
+          "name": "Google Drive saif010415"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "pineconeIndex": {
+          "__rl": true,
+          "value": "lumina",
+          "mode": "list",
+          "cachedResultName": "lumina"
+        },
+        "options": {
+          "pineconeNamespace": "CustomerSupport"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+      "typeVersion": 1.3,
+      "position": [
+        -480,
+        544
+      ],
+      "id": "d00533bb-cb6e-42f0-bffc-5e8d06c403f5",
+      "name": "Pinecone Vector Store",
+      "credentials": {
+        "pineconeApi": {
+          "id": "IslEk41fXzgBqOih",
+          "name": "Pinecone RAG pipline"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.embeddingsGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -512,
+        768
+      ],
+      "id": "feecf5c5-bf75-4666-9a23-ab8004ee669d",
+      "name": "Embeddings Google Gemini1",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "q4b0CeQmMBLjGAps",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "dataType": "binary",
+        "textSplittingMode": "custom",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "typeVersion": 1.1,
+      "position": [
+        -384,
+        768
+      ],
+      "id": "5c3a403e-98f6-4f0c-830e-b001257a8873",
+      "name": "Default Data Loader",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "chunkOverlap": 100,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.textSplitterRecursiveCharacterTextSplitter",
+      "typeVersion": 1,
+      "position": [
+        -304,
+        976
+      ],
+      "id": "65339158-2efb-4e67-ab5a-33246b553ce5",
+      "name": "Recursive Character Text Splitter",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-oss-120b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        -160,
+        1200
+      ],
+      "id": "fe8c7c56-2f7f-4f67-bb4a-5ee89722e36b",
+      "name": "Groq Chat Model1",
+      "credentials": {
+        "groqApi": {
+          "id": "Xo9ygVtRduy0ESow",
+          "name": "Groq N8N_HFSPACE"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "reply",
+        "messageId": "={{ $('Gmail Trigger').item.json.id }}",
+        "message": "={{ $json.output.Output }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        592,
+        1280
+      ],
+      "id": "300d8b9a-cf38-4c08-9820-898a3d4e2700",
+      "name": "Reply to a message",
+      "webhookId": "299fba89-7c35-47c3-8baa-3f2414b024f6",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "tgQCKa9VzTtRVHrp",
+          "name": "Gmail saif010415"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "description": "When customer asks for refund on his purchased product, Call this tool to generate a RMA number and then send this RMA number to the customer.",
+        "workflowId": {
+          "__rl": true,
+          "value": "ajFcXKTmh1UHGM-xZiDDJ",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/ajFcXKTmh1UHGM-xZiDDJ",
+          "cachedResultName": "RMA tools for customer support workflow"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Customer Email": "={{ $json.from.value[0].address }}",
+            "Reason": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Reason', ``, 'string') }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Customer Email",
+              "displayName": "Customer Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "Reason",
+              "displayName": "Reason",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        256,
+        1200
+      ],
+      "id": "325d5d89-b5ab-466b-8187-30553d2ef193",
+      "name": "generate_rma"
+    },
+    {
+      "parameters": {
+        "inputText": "={{ $json.text }}",
+        "categories": {
+          "categories": [
+            {
+              "category": "Customer Support",
+              "description": "=An email that is related to helping out a customer. They may be asking related to our policies or questioon about our product and services."
+            },
+            {
+              "category": "Other",
+              "description": "Any email that is not customer support related"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.textClassifier",
+      "typeVersion": 1.1,
+      "position": [
+        -512,
+        1392
+      ],
+      "id": "a479ab2b-33a2-444a-98b7-c8fba00d113b",
+      "name": "Email classifier"
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-oss-20b",
+        "options": {
+          "temperature": 0.2
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        -448,
+        1616
+      ],
+      "id": "1013246c-819a-45ed-b3de-d3491c855868",
+      "name": "gpt-oss-20b",
+      "credentials": {
+        "groqApi": {
+          "id": "Xo9ygVtRduy0ESow",
+          "name": "Groq N8N_HFSPACE"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1AuiXIqbBYl-z10ixaKxp8Iz4w1dmAYpeaxR6OituL2Q",
+          "mode": "list",
+          "cachedResultName": "Lumina Refund Details",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1AuiXIqbBYl-z10ixaKxp8Iz4w1dmAYpeaxR6OituL2Q/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1683546281,
+          "mode": "list",
+          "cachedResultName": "Ticketing system",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1AuiXIqbBYl-z10ixaKxp8Iz4w1dmAYpeaxR6OituL2Q/edit#gid=1683546281"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Timestamp": "={{ $now }}",
+            "Customer Email": "={{ $('Gmail Trigger').item.json.headers.to }}",
+            "Subject": "={{ $('Gmail Trigger').item.json.headers.subject }}",
+            "Resolution": "={{ $json.output.resolving_tool }}",
+            "RMA Code": "={{ $json.output.rma_code }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Timestamp",
+              "displayName": "Timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Customer Email",
+              "displayName": "Customer Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Subject",
+              "displayName": "Subject",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Resolution",
+              "displayName": "Resolution",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "RMA Code",
+              "displayName": "RMA Code",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        592,
+        1088
+      ],
+      "id": "4aaa4ce5-8c8a-43cc-9380-b8e15c4042f8",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "hDGMrztmcsJEb8yf",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n  \"Output\": \"Hi [Name],<br><br>Since your item is defective, return shipping is free. Please ship the item to the address below and email us a copy of the shipping receipt for full reimbursement.<br><br><b>Return Address:</b><br>Lumina Returns, 123 Tech Blvd, Austin, TX 78701.<br><br>Warm regards,<br>Ms. Sian 🌟<br>Lumina Smart Home Support\",\n  \"resolving_tool\": \"rma\",\n  \"rma_code\": \"RMA123456\"\n}\n"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        384,
+        1200
+      ],
+      "id": "685709a5-f3fa-4fee-beb1-0f7634a79897",
+      "name": "Structured Output Parser"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Gmail Trigger": {
+      "main": [
+        [
+          {
+            "node": "Email classifier",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "knowledgebase": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings Google Gemini": {
+      "ai_embedding": [
+        [
+          {
+            "node": "knowledgebase",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download file": {
+      "main": [
+        [
+          {
+            "node": "Pinecone Vector Store",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings Google Gemini1": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Pinecone Vector Store",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Default Data Loader": {
+      "ai_document": [
+        [
+          {
+            "node": "Pinecone Vector Store",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Recursive Character Text Splitter": {
+      "ai_textSplitter": [
+        [
+          {
+            "node": "Default Data Loader",
+            "type": "ai_textSplitter",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Reply to a message",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "generate_rma": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Email classifier": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "No Operation, do nothing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "gpt-oss-20b": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Email classifier",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "f6e45726-6279-407d-8057-4a6b4a8f0152",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "ba4a413a28fff05e64ee8cfa646ba24d9886a3ee4c960d099634d2d8108802a5"
+  },
+  "id": "y3RbZmdbPR_3plA52YOzo",
+  "tags": []
+}
