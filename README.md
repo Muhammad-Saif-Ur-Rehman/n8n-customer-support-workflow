@@ -10,6 +10,9 @@ This folder contains two n8n workflows used by Lumina Smart Home support to proc
 ### RMA code generator workflow
 ![RMA code generator workflow](screenshots/RMA%20code%20generator%20workflow.png)
 
+### Automated chunking and embedding system
+![Automated chunking and embedding system](screenshots/Automated%20chunking%20and%20embedding%20system.png)
+
 ## Purpose
 
 These workflows automate Lumina Smart Home's customer support email handling:
